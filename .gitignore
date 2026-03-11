@@ -9,7 +9,7 @@ env.properties
 .env
 .env.*
 !.env.example
-/docs
+docs
 
 ### STS ###
 .apt_generated
