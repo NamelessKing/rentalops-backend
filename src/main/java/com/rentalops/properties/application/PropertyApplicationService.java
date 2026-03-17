@@ -2,6 +2,7 @@ package com.rentalops.properties.application;
 
 import com.rentalops.iam.domain.model.UserRole;
 import com.rentalops.properties.api.dto.CreatePropertyRequest;
+import com.rentalops.properties.api.dto.DeactivatePropertyResponse;
 import com.rentalops.properties.api.dto.PropertyDetailResponse;
 import com.rentalops.properties.api.dto.PropertyListItemResponse;
 import com.rentalops.properties.domain.model.Property;
@@ -95,6 +96,59 @@ public class PropertyApplicationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found in this tenant."));
 
         return toDetailResponse(property);
+    }
+
+    /**
+     * Updates a property owned by the current tenant.
+     *
+     * <p>The propertyCode is normalized and can remain unchanged. If changed,
+     * it must still be unique in the same tenant.
+     */
+    @Transactional
+    public PropertyDetailResponse updateProperty(UUID propertyId, CreatePropertyRequest request) {
+        assertCurrentUserIsAdmin();
+        UUID tenantId = currentUserProvider.getCurrentTenantId();
+
+        Property property = propertyRepository.findByIdAndTenantId(propertyId, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found in this tenant."));
+
+        String normalizedCode = normalizePropertyCode(request.propertyCode());
+
+        // Only check uniqueness against other records when the code changes.
+        if (!normalizedCode.equals(property.getPropertyCode())
+                && propertyRepository.existsByTenantIdAndPropertyCode(tenantId, normalizedCode)) {
+            throw new BusinessConflictException("Property code already exists in this tenant.");
+        }
+
+        property.setPropertyCode(normalizedCode);
+        property.setName(request.name().trim());
+        property.setAddress(request.address().trim());
+        property.setCity(request.city().trim());
+        property.setNotes(normalizeNotes(request.notes()));
+
+        property = propertyRepository.save(property);
+
+        return toDetailResponse(property);
+    }
+
+    /**
+     * Deactivates a property in the current tenant.
+     *
+     * <p>This operation is idempotent: already inactive properties still return
+     * success with {@code active=false}.
+     */
+    @Transactional
+    public DeactivatePropertyResponse deactivateProperty(UUID propertyId) {
+        assertCurrentUserIsAdmin();
+        UUID tenantId = currentUserProvider.getCurrentTenantId();
+
+        Property property = propertyRepository.findByIdAndTenantId(propertyId, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found in this tenant."));
+
+        property.setActive(false);
+        property = propertyRepository.save(property);
+
+        return new DeactivatePropertyResponse(property.getId(), property.isActive());
     }
 
     private void assertCurrentUserIsAdmin() {
