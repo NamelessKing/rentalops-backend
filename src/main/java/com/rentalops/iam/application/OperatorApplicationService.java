@@ -2,6 +2,7 @@ package com.rentalops.iam.application;
 
 import com.rentalops.iam.api.dto.CreateOperatorRequest;
 import com.rentalops.iam.api.dto.CreateOperatorResponse;
+import com.rentalops.iam.api.dto.DisableOperatorResponse;
 import com.rentalops.iam.api.dto.OperatorListItemResponse;
 import com.rentalops.iam.domain.model.TaskCategory;
 import com.rentalops.iam.domain.model.User;
@@ -144,7 +145,7 @@ public class OperatorApplicationService {
      * @throws ResourceNotFoundException if the operator does not exist in this tenant
      */
     @Transactional
-    public void disableOperator(UUID operatorId) {
+    public DisableOperatorResponse disableOperator(UUID operatorId) {
         assertCurrentUserIsAdmin();
 
         UUID tenantId = currentUserProvider.getCurrentTenantId();
@@ -156,6 +157,8 @@ public class OperatorApplicationService {
 
         operator.setStatus(UserStatus.DISABLED);
         userRepository.save(operator);
+
+        return new DisableOperatorResponse(operator.getId(), operator.getStatus().name());
     }
 
     /**

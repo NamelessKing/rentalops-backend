@@ -2,6 +2,7 @@ package com.rentalops.iam.api;
 
 import com.rentalops.iam.api.dto.CreateOperatorRequest;
 import com.rentalops.iam.api.dto.CreateOperatorResponse;
+import com.rentalops.iam.api.dto.DisableOperatorResponse;
 import com.rentalops.iam.api.dto.OperatorListItemResponse;
 import com.rentalops.iam.application.OperatorApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -115,7 +116,8 @@ public class OperatorAdminController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Operator disabled"
+                    description = "Operator disabled",
+                    content = @Content(schema = @Schema(implementation = DisableOperatorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -131,8 +133,8 @@ public class OperatorAdminController {
             )
     })
     @PatchMapping("/{id}/disable")
-    public void disableOperator(@PathVariable UUID id) {
-        operatorApplicationService.disableOperator(id);
+    public DisableOperatorResponse disableOperator(@PathVariable UUID id) {
+        return operatorApplicationService.disableOperator(id);
     }
 }
 
