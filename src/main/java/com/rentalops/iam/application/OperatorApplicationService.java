@@ -9,6 +9,7 @@ import com.rentalops.iam.domain.model.UserRole;
 import com.rentalops.iam.domain.model.UserStatus;
 import com.rentalops.iam.infrastructure.persistence.UserRepository;
 import com.rentalops.shared.exceptions.BusinessConflictException;
+import com.rentalops.shared.exceptions.DomainValidationException;
 import com.rentalops.shared.exceptions.ForbiddenOperationException;
 import com.rentalops.shared.exceptions.ResourceNotFoundException;
 import com.rentalops.shared.security.CurrentUserProvider;
@@ -100,7 +101,8 @@ public class OperatorApplicationService {
             try {
                 specialization = TaskCategory.valueOf(request.specializationCategory());
             } catch (IllegalArgumentException ignored) {
-                // If invalid category string, just skip setting it (nullable in domain)
+                // Fail fast so clients fix the payload instead of silently persisting wrong data.
+                throw new DomainValidationException("Invalid specializationCategory.");
             }
         }
 
@@ -166,7 +168,4 @@ public class OperatorApplicationService {
         }
     }
 }
-
-
-
 
