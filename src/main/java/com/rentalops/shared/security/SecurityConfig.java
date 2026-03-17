@@ -11,10 +11,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-@Configuration
-@EnableWebSecurity
-@EnableConfigurationProperties(JwtProperties.class)
+import java.util.List;
+
 /**
  * Central Spring Security configuration for the MVP foundation setup.
  *
@@ -31,6 +33,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * - every protected request must bring its own bearer token
  * - the token is parsed on each request and transformed into an application principal
  */
+@Configuration
+@EnableWebSecurity
+@EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
     /*
@@ -55,6 +60,9 @@ public class SecurityConfig {
                                             JwtAuthenticationFilter jwtAuthenticationFilter,
                                             RestAuthenticationEntryPoint restAuthenticationEntryPoint) throws Exception {
         return http
+                // Allow frontend preflight and cross-origin auth calls in local development.
+                .cors(cors -> {
+                })
                 /*
                  * CSRF protection is mainly useful for browser session/cookie based apps.
                  * Here we are building a stateless REST API with bearer tokens, so CSRF
@@ -98,6 +106,22 @@ public class SecurityConfig {
                  */
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(
+                "http://127.0.0.1:5173",
+                "http://localhost:5173"
+        ));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
