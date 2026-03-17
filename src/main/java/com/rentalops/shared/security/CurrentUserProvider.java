@@ -1,5 +1,6 @@
 package com.rentalops.shared.security;
 
+import com.rentalops.iam.domain.model.UserRole;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,5 +41,13 @@ public class CurrentUserProvider {
         // Convenience method used by tenant-scoped services so they do not have
         // to repeatedly navigate through the principal structure.
         return getCurrentUser().tenantId();
+    }
+
+    public UserRole getCurrentUserRole() {
+        return getCurrentUser().role();
+    }
+
+    public UUID getCurrentUserId() {
+        return getCurrentUser().userId();
     }
 }

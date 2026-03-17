@@ -106,4 +106,13 @@ public class User {
     public TaskCategory getSpecializationCategory() { return specializationCategory; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    // Setters for mutable fields (status and specialization can change over time)
+    public void setStatus(UserStatus status) {
+        this.status = status;
+    }
+
+    public void setSpecializationCategory(TaskCategory specializationCategory) {
+        this.specializationCategory = specializationCategory;
+    }
 }

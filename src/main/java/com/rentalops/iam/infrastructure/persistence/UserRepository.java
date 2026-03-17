@@ -1,8 +1,10 @@
 package com.rentalops.iam.infrastructure.persistence;
 
 import com.rentalops.iam.domain.model.User;
+import com.rentalops.iam.domain.model.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,4 +28,17 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      * attempting to persist — gives a clean 409 instead of a DB constraint error.
      */
     boolean existsByEmail(String email);
+
+    /**
+     * Used by operator listing to fetch all operators of a specific tenant.
+     * Filters by both tenant ID and role to return only OPERATOR-role users.
+     * This supports Slice 2 admin team management.
+     */
+    List<User> findAllByTenantIdAndRole(UUID tenantId, UserRole role);
+
+    /**
+     * Used by operator disable and other operations that need to verify
+     * ownership within a tenant before modifying or reading operator details.
+     */
+    Optional<User> findByIdAndTenantId(UUID id, UUID tenantId);
 }
