@@ -1,9 +1,9 @@
 package com.rentalops.properties.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rentalops.properties.api.dto.CreatePropertyRequest;
 import com.rentalops.properties.api.dto.DeactivatePropertyResponse;
 import com.rentalops.properties.api.dto.PropertyDetailResponse;
+import com.rentalops.properties.api.dto.UpdatePropertyRequest;
 import com.rentalops.properties.application.PropertyApplicationService;
 import com.rentalops.shared.api.ApiExceptionHandler;
 import com.rentalops.shared.exceptions.BusinessConflictException;
@@ -52,7 +52,7 @@ class PropertyUpdateWebTest {
     @Test
     void updateProperty_shouldReturn200_whenUpdateSucceeds() throws Exception {
         UUID propertyId = UUID.fromString("55555555-5555-5555-5555-555555555555");
-        CreatePropertyRequest request = new CreatePropertyRequest(
+        UpdatePropertyRequest request = new UpdatePropertyRequest(
                 "apt-001",
                 "Milano Centrale Loft Updated",
                 "Via Roma 10",
@@ -60,7 +60,7 @@ class PropertyUpdateWebTest {
                 "Updated note"
         );
 
-        when(propertyApplicationService.updateProperty(eq(propertyId), any(CreatePropertyRequest.class)))
+        when(propertyApplicationService.updateProperty(eq(propertyId), any(UpdatePropertyRequest.class)))
                 .thenReturn(new PropertyDetailResponse(
                         propertyId,
                         "APT-001",
@@ -83,7 +83,7 @@ class PropertyUpdateWebTest {
     @Test
     void updateProperty_shouldReturn404_whenPropertyNotFoundInTenant() throws Exception {
         UUID propertyId = UUID.fromString("66666666-6666-6666-6666-666666666666");
-        CreatePropertyRequest request = new CreatePropertyRequest(
+        UpdatePropertyRequest request = new UpdatePropertyRequest(
                 "APT-001",
                 "Milano Centrale Loft",
                 "Via Roma 1",
@@ -91,7 +91,7 @@ class PropertyUpdateWebTest {
                 null
         );
 
-        when(propertyApplicationService.updateProperty(eq(propertyId), any(CreatePropertyRequest.class)))
+        when(propertyApplicationService.updateProperty(eq(propertyId), any(UpdatePropertyRequest.class)))
                 .thenThrow(new ResourceNotFoundException("Property not found in this tenant."));
 
         mockMvc.perform(put("/properties/{id}", propertyId)
@@ -104,7 +104,7 @@ class PropertyUpdateWebTest {
     @Test
     void updateProperty_shouldReturn409_whenPropertyCodeConflictsWithAnotherRecord() throws Exception {
         UUID propertyId = UUID.fromString("77777777-7777-7777-7777-777777777777");
-        CreatePropertyRequest request = new CreatePropertyRequest(
+        UpdatePropertyRequest request = new UpdatePropertyRequest(
                 "APT-002",
                 "Milano Centrale Loft",
                 "Via Roma 1",
@@ -112,7 +112,7 @@ class PropertyUpdateWebTest {
                 null
         );
 
-        when(propertyApplicationService.updateProperty(eq(propertyId), any(CreatePropertyRequest.class)))
+        when(propertyApplicationService.updateProperty(eq(propertyId), any(UpdatePropertyRequest.class)))
                 .thenThrow(new BusinessConflictException("Property code already exists in this tenant."));
 
         mockMvc.perform(put("/properties/{id}", propertyId)

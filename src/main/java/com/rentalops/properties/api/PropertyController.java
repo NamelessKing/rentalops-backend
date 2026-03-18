@@ -4,6 +4,7 @@ import com.rentalops.properties.api.dto.CreatePropertyRequest;
 import com.rentalops.properties.api.dto.DeactivatePropertyResponse;
 import com.rentalops.properties.api.dto.PropertyDetailResponse;
 import com.rentalops.properties.api.dto.PropertyListItemResponse;
+import com.rentalops.properties.api.dto.UpdatePropertyRequest;
 import com.rentalops.properties.application.PropertyApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -150,7 +151,7 @@ public class PropertyController {
     })
     @PutMapping("/{id}")
     public PropertyDetailResponse updateProperty(@PathVariable UUID id,
-                                                 @Valid @RequestBody CreatePropertyRequest request) {
+                                                 @Valid @RequestBody UpdatePropertyRequest request) {
         return propertyApplicationService.updateProperty(id, request);
     }
 

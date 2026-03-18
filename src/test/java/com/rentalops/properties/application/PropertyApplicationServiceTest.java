@@ -3,6 +3,7 @@ package com.rentalops.properties.application;
 import com.rentalops.iam.domain.model.UserRole;
 import com.rentalops.properties.api.dto.CreatePropertyRequest;
 import com.rentalops.properties.api.dto.PropertyDetailResponse;
+import com.rentalops.properties.api.dto.UpdatePropertyRequest;
 import com.rentalops.properties.domain.model.Property;
 import com.rentalops.properties.infrastructure.persistence.PropertyRepository;
 import com.rentalops.shared.exceptions.BusinessConflictException;
@@ -122,6 +123,40 @@ class PropertyApplicationServiceTest {
         assertThatThrownBy(() -> propertyApplicationService.createProperty(request))
                 .isInstanceOf(ForbiddenOperationException.class)
                 .hasMessage("Only admins can manage properties.");
+    }
+
+    @Test
+    void updateProperty_shouldPersistNormalizedCode_whenPropertyBelongsToTenantAndCodeChanges() {
+        UUID propertyId = UUID.randomUUID();
+        Property existing = new Property(
+                propertyId,
+                tenantA,
+                "APT-001",
+                "Old name",
+                "Old address",
+                "Milano",
+                null
+        );
+
+        UpdatePropertyRequest request = new UpdatePropertyRequest(
+                " apt-002 ",
+                "New name",
+                "New address",
+                "Roma",
+                "Updated notes"
+        );
+
+        when(currentUserProvider.getCurrentUserRole()).thenReturn(UserRole.ADMIN);
+        when(currentUserProvider.getCurrentTenantId()).thenReturn(tenantA);
+        when(propertyRepository.findByIdAndTenantId(propertyId, tenantA)).thenReturn(Optional.of(existing));
+        when(propertyRepository.existsByTenantIdAndPropertyCode(tenantA, "APT-002")).thenReturn(false);
+        when(propertyRepository.save(any(Property.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PropertyDetailResponse response = propertyApplicationService.updateProperty(propertyId, request);
+
+        assertThat(response.propertyCode()).isEqualTo("APT-002");
+        assertThat(response.name()).isEqualTo("New name");
+        assertThat(response.city()).isEqualTo("Roma");
     }
 }
 

@@ -5,6 +5,7 @@ import com.rentalops.properties.api.dto.CreatePropertyRequest;
 import com.rentalops.properties.api.dto.DeactivatePropertyResponse;
 import com.rentalops.properties.api.dto.PropertyDetailResponse;
 import com.rentalops.properties.api.dto.PropertyListItemResponse;
+import com.rentalops.properties.api.dto.UpdatePropertyRequest;
 import com.rentalops.properties.domain.model.Property;
 import com.rentalops.properties.infrastructure.persistence.PropertyRepository;
 import com.rentalops.shared.exceptions.BusinessConflictException;
@@ -105,7 +106,7 @@ public class PropertyApplicationService {
      * it must still be unique in the same tenant.
      */
     @Transactional
-    public PropertyDetailResponse updateProperty(UUID propertyId, CreatePropertyRequest request) {
+    public PropertyDetailResponse updateProperty(UUID propertyId, UpdatePropertyRequest request) {
         assertCurrentUserIsAdmin();
         UUID tenantId = currentUserProvider.getCurrentTenantId();
 
