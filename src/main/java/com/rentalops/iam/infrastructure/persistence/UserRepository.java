@@ -41,4 +41,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      * ownership within a tenant before modifying or reading operator details.
      */
     Optional<User> findByIdAndTenantId(UUID id, UUID tenantId);
+
+    /**
+     * Used by operator update to guard against duplicate emails while excluding
+     * the operator being updated. Without the IdNot clause, updating an operator
+     * without changing their email would incorrectly trigger a 409 conflict.
+     */
+    boolean existsByEmailAndIdNot(String email, UUID excludedId);
 }

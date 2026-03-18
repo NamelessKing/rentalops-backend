@@ -3,7 +3,10 @@ package com.rentalops.iam.application;
 import com.rentalops.iam.api.dto.CreateOperatorRequest;
 import com.rentalops.iam.api.dto.CreateOperatorResponse;
 import com.rentalops.iam.api.dto.DisableOperatorResponse;
+import com.rentalops.iam.api.dto.EnableOperatorResponse;
 import com.rentalops.iam.api.dto.OperatorListItemResponse;
+import com.rentalops.iam.api.dto.UpdateOperatorRequest;
+import com.rentalops.iam.api.dto.UpdateOperatorResponse;
 import com.rentalops.iam.domain.model.TaskCategory;
 import com.rentalops.iam.domain.model.User;
 import com.rentalops.iam.domain.model.UserRole;
@@ -159,6 +162,102 @@ public class OperatorApplicationService {
         userRepository.save(operator);
 
         return new DisableOperatorResponse(operator.getId(), operator.getStatus().name());
+    }
+
+    /**
+     * Updates an operator's editable fields in the authenticated admin's tenant.
+     *
+     * <p>Business rules:
+     * - all core fields (fullName, email, specializationCategory) are replaced
+     * - newPassword is optional: null or blank means "keep existing password"
+     * - if newPassword is provided it must be at least 8 characters
+     * - email uniqueness is checked against all other users (excluding this operator)
+     * - role and tenantId are immutable and never touched by this use case
+     *
+     * @throws ForbiddenOperationException if the authenticated user is not an ADMIN
+     * @throws ResourceNotFoundException if the operator does not exist in this tenant
+     * @throws BusinessConflictException if the new email is already in use by another user
+     * @throws DomainValidationException if the newPassword or specializationCategory is invalid
+     */
+    @Transactional
+    public UpdateOperatorResponse updateOperator(UUID operatorId, UpdateOperatorRequest request) {
+        assertCurrentUserIsAdmin();
+
+        UUID tenantId = currentUserProvider.getCurrentTenantId();
+
+        User operator = userRepository.findByIdAndTenantId(operatorId, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Operator not found in this tenant."
+                ));
+
+        // Guard email uniqueness against all other users, excluding this operator itself.
+        // Without the IdNot exclusion, keeping the same email would always trigger a 409.
+        if (userRepository.existsByEmailAndIdNot(request.email(), operatorId)) {
+            throw new BusinessConflictException("Email already in use.");
+        }
+
+        // Parse specialization — same logic as in createOperator to stay consistent.
+        TaskCategory specialization = null;
+        if (request.specializationCategory() != null && !request.specializationCategory().isEmpty()) {
+            try {
+                specialization = TaskCategory.valueOf(request.specializationCategory());
+            } catch (IllegalArgumentException ignored) {
+                throw new DomainValidationException("Invalid specializationCategory.");
+            }
+        }
+
+        operator.setFullName(request.fullName());
+        operator.setEmail(request.email());
+        operator.setSpecializationCategory(specialization);
+
+        // Only replace the password when a non-blank value is provided.
+        // This avoids forcing admins to re-enter credentials on every edit.
+        if (request.newPassword() != null && !request.newPassword().isBlank()) {
+            if (request.newPassword().length() < 8) {
+                throw new DomainValidationException("New password must be at least 8 characters.");
+            }
+            operator.setPassword(passwordEncoder.encode(request.newPassword()));
+        }
+
+        operator = userRepository.save(operator);
+
+        return new UpdateOperatorResponse(
+                operator.getId(),
+                operator.getFullName(),
+                operator.getEmail(),
+                operator.getRole().name(),
+                operator.getStatus().name(),
+                operator.getSpecializationCategory() != null ? operator.getSpecializationCategory().name() : null
+        );
+    }
+
+    /**
+     * Re-enables a previously disabled operator in the authenticated admin's tenant.
+     *
+     * <p>This operation is idempotent: calling enable on an already-active operator
+     * returns 200 with the current status without throwing an error. This avoids
+     * race condition edge cases and keeps the frontend logic simple.
+     *
+     * @throws ForbiddenOperationException if the authenticated user is not an ADMIN
+     * @throws ResourceNotFoundException if the operator does not exist in this tenant
+     */
+    @Transactional
+    public EnableOperatorResponse enableOperator(UUID operatorId) {
+        assertCurrentUserIsAdmin();
+
+        UUID tenantId = currentUserProvider.getCurrentTenantId();
+
+        User operator = userRepository.findByIdAndTenantId(operatorId, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Operator not found in this tenant."
+                ));
+
+        // Idempotent: set ACTIVE regardless of current status.
+        // No need to check the current status — the result is always the same.
+        operator.setStatus(UserStatus.ACTIVE);
+        userRepository.save(operator);
+
+        return new EnableOperatorResponse(operator.getId(), operator.getStatus().name());
     }
 
     /**

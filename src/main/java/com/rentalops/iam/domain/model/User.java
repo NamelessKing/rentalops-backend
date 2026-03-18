@@ -107,7 +107,23 @@ public class User {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
-    // Setters for mutable fields (status and specialization can change over time)
+    // Setters for mutable fields. Status and specialization were already mutable;
+    // fullName, email and password are added here to support the operator update use case.
+    // tenantId and role are deliberately excluded — they must never change after creation.
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    // Password must always be stored pre-hashed. The caller (service layer) is
+    // responsible for encoding before invoking this setter.
+    public void setPassword(String passwordHash) {
+        this.password = passwordHash;
+    }
+
     public void setStatus(UserStatus status) {
         this.status = status;
     }
