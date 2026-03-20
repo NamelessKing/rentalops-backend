@@ -29,14 +29,14 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Exposes property endpoints for Slice 2 foundation.
+ * Exposes property management endpoints.
  *
  * <p>The controller stays thin and delegates all tenant and role logic to
  * PropertyApplicationService.
  */
 @RestController
 @RequestMapping("/properties")
-@Tag(name = "Properties", description = "Property management for Slice 2")
+@Tag(name = "Properties", description = "Property management within the authenticated tenant")
 public class PropertyController {
 
     private final PropertyApplicationService propertyApplicationService;
