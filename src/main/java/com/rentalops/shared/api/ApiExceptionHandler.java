@@ -6,6 +6,7 @@ import com.rentalops.shared.exceptions.ForbiddenOperationException;
 import com.rentalops.shared.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -87,6 +88,22 @@ public class ApiExceptionHandler {
     public ProblemDetail handleConflict(BusinessConflictException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Business conflict");
+        return problem;
+    }
+
+    /**
+     * Catches optimistic locking failures that escape the service layer.
+     *
+     * <p>The service layer wraps saveAndFlush in a try/catch and converts the exception
+     * to BusinessConflictException before the transaction commits. This handler is a
+     * safety net for any case where the conversion does not happen at the service level
+     * (e.g. a flush triggered elsewhere in the transaction).
+     */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleOptimisticLocking(ObjectOptimisticLockingFailureException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT, "The resource was modified by another request. Please retry.");
+        problem.setTitle("Concurrent modification conflict");
         return problem;
     }
 }

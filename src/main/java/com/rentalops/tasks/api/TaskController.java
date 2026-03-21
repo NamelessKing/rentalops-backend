@@ -2,6 +2,7 @@ package com.rentalops.tasks.api;
 
 import com.rentalops.tasks.api.dto.CreateTaskRequest;
 import com.rentalops.tasks.api.dto.MyTaskItemResponse;
+import com.rentalops.tasks.api.dto.TaskClaimResponse;
 import com.rentalops.tasks.api.dto.TaskDetailResponse;
 import com.rentalops.tasks.api.dto.TaskListItemResponse;
 import com.rentalops.tasks.api.dto.TaskPoolItemResponse;
@@ -179,24 +180,84 @@ public class TaskController {
         return taskQueryService.listMyTasks();
     }
 
-    @Operation(summary = "Claim a pool task", description = "Operator claims a PENDING pool task. Not yet available.")
+    @Operation(summary = "Claim a pool task",
+               description = "Operator claims a PENDING pool task. Returns the updated task with ASSIGNED status.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Task claimed successfully",
+                    content = @Content(schema = @Schema(implementation = TaskClaimResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Not an operator",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task not found in tenant",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Task already claimed or not available",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
     @PostMapping("/{id}/claim")
-    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-    public void claimTask(@PathVariable UUID id) {
-        // Not yet implemented.
+    public TaskClaimResponse claimTask(@PathVariable UUID id) {
+        return taskApplicationService.claimTask(id);
     }
 
-    @Operation(summary = "Start a task", description = "Transitions an assigned task to IN_PROGRESS. Not yet available.")
+    @Operation(summary = "Start a task",
+               description = "Transitions the task from ASSIGNED to IN_PROGRESS. Only the assignee can do this.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Task started"),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Not the task assignee",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task not found in tenant",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Invalid state transition",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
     @PatchMapping("/{id}/start")
-    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void startTask(@PathVariable UUID id) {
-        // Not yet implemented.
+        taskApplicationService.startTask(id);
     }
 
-    @Operation(summary = "Complete a task", description = "Transitions an in-progress task to COMPLETED. Not yet available.")
+    @Operation(summary = "Complete a task",
+               description = "Transitions the task from IN_PROGRESS to COMPLETED. Only the assignee can do this.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Task completed"),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Not the task assignee",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Task not found in tenant",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Invalid state transition",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
+    })
     @PatchMapping("/{id}/complete")
-    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void completeTask(@PathVariable UUID id) {
-        // Not yet implemented.
+        taskApplicationService.completeTask(id);
     }
 }

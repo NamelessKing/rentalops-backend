@@ -13,12 +13,14 @@ import com.rentalops.shared.exceptions.ResourceNotFoundException;
 import com.rentalops.shared.security.AuthenticatedUser;
 import com.rentalops.shared.security.CurrentUserProvider;
 import com.rentalops.tasks.api.dto.CreateTaskRequest;
+import com.rentalops.tasks.api.dto.TaskClaimResponse;
 import com.rentalops.tasks.api.dto.TaskDetailResponse;
 import com.rentalops.tasks.domain.model.Task;
 import com.rentalops.tasks.domain.model.TaskDispatchMode;
 import com.rentalops.tasks.domain.model.TaskPriority;
 import com.rentalops.tasks.domain.model.TaskStatus;
 import com.rentalops.tasks.infrastructure.persistence.TaskRepository;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,6 +106,134 @@ public class TaskApplicationService {
         taskRepository.save(task);
 
         return toDetailResponse(task, property.getName(), assignee != null ? assignee.getFullName() : null);
+    }
+
+    // --- Slice 4: operator task execution use cases ---
+
+    /**
+     * Operator claims a PENDING POOL task.
+     *
+     * <p>Enforces:
+     *   - caller must be OPERATOR
+     *   - task must belong to the operator's tenant
+     *   - task must be in POOL dispatch mode
+     *   - task must be in PENDING status (no assignee yet)
+     *   - operator's specializationCategory must match the task category
+     *     (mirrors the pool visibility filter — prevents bypass via direct POST)
+     *   - optimistic locking via @Version: concurrent claim → 409
+     */
+    @Transactional
+    public TaskClaimResponse claimTask(UUID taskId) {
+        AuthenticatedUser currentUser = currentUserProvider.getCurrentUser();
+
+        if (!currentUser.isOperator()) {
+            throw new ForbiddenOperationException("Only OPERATOR users can claim pool tasks.");
+        }
+
+        UUID tenantId = currentUser.tenantId();
+
+        Task task = taskRepository.findByIdAndTenantId(taskId, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + taskId));
+
+        if (!task.isPool()) {
+            throw new BusinessConflictException("Only POOL tasks can be claimed.");
+        }
+
+        if (!task.isPending()) {
+            throw new BusinessConflictException("Task is not available for claiming.");
+        }
+
+        // Re-enforce category compatibility at the mutation boundary.
+        // The pool list query already filters by category, but an operator could
+        // bypass the UI and POST directly with a task UUID from another category.
+        User operator = userRepository.findByIdAndTenantId(currentUser.userId(), tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Operator profile not found."));
+
+        if (operator.getSpecializationCategory() == null) {
+            throw new BusinessConflictException("Operator has no specialization category.");
+        }
+
+        if (operator.getSpecializationCategory() != task.getCategory()) {
+            throw new BusinessConflictException("Operator specialization does not match task category.");
+        }
+
+        task.setAssigneeId(currentUser.userId());
+        task.setStatus(TaskStatus.ASSIGNED);
+
+        try {
+            taskRepository.saveAndFlush(task);
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            // Another operator claimed the same task in a concurrent request.
+            throw new BusinessConflictException("Task already claimed by another operator.");
+        }
+
+        return new TaskClaimResponse(task.getId(), task.getStatus().name(), task.getAssigneeId());
+    }
+
+    /**
+     * Transitions an ASSIGNED task to IN_PROGRESS.
+     *
+     * <p>Enforces:
+     *   - caller must be OPERATOR and must be the task's assignee
+     *   - task must be in ASSIGNED status
+     */
+    @Transactional
+    public void startTask(UUID taskId) {
+        AuthenticatedUser currentUser = currentUserProvider.getCurrentUser();
+
+        if (!currentUser.isOperator()) {
+            throw new ForbiddenOperationException("Only OPERATOR users can start tasks.");
+        }
+
+        UUID tenantId = currentUser.tenantId();
+
+        Task task = taskRepository.findByIdAndTenantId(taskId, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + taskId));
+
+        if (!currentUser.userId().equals(task.getAssigneeId())) {
+            throw new ForbiddenOperationException("Only the assigned operator can start this task.");
+        }
+
+        if (!task.isAssigned()) {
+            throw new BusinessConflictException(
+                    "Task cannot be started from its current state: " + task.getStatus());
+        }
+
+        task.setStatus(TaskStatus.IN_PROGRESS);
+        taskRepository.save(task);
+    }
+
+    /**
+     * Transitions an IN_PROGRESS task to COMPLETED.
+     *
+     * <p>Enforces:
+     *   - caller must be OPERATOR and must be the task's assignee
+     *   - task must be in IN_PROGRESS status
+     */
+    @Transactional
+    public void completeTask(UUID taskId) {
+        AuthenticatedUser currentUser = currentUserProvider.getCurrentUser();
+
+        if (!currentUser.isOperator()) {
+            throw new ForbiddenOperationException("Only OPERATOR users can complete tasks.");
+        }
+
+        UUID tenantId = currentUser.tenantId();
+
+        Task task = taskRepository.findByIdAndTenantId(taskId, tenantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + taskId));
+
+        if (!currentUser.userId().equals(task.getAssigneeId())) {
+            throw new ForbiddenOperationException("Only the assigned operator can complete this task.");
+        }
+
+        if (!task.isInProgress()) {
+            throw new BusinessConflictException(
+                    "Task cannot be completed from its current state: " + task.getStatus());
+        }
+
+        task.setStatus(TaskStatus.COMPLETED);
+        taskRepository.save(task);
     }
 
     // --- private helpers ---
