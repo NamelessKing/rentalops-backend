@@ -49,5 +49,11 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
      * Covers both direct-assignment tasks and pool tasks the operator has claimed.
      */
     List<Task> findAllByTenantIdAndAssigneeId(UUID tenantId, UUID assigneeId);
+
+    /**
+     * Count tasks by status within a tenant.
+     * Used by the dashboard to build per-status aggregates without loading entities.
+     */
+    long countByTenantIdAndStatus(UUID tenantId, TaskStatus status);
 }
 

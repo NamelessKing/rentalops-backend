@@ -1,6 +1,7 @@
 package com.rentalops.issuereports.infrastructure.persistence;
 
 import com.rentalops.issuereports.domain.model.IssueReport;
+import com.rentalops.issuereports.domain.model.IssueReportStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -25,5 +26,11 @@ public interface IssueReportRepository extends JpaRepository<IssueReport, UUID> 
      * before any mutation (convert, dismiss).
      */
     Optional<IssueReport> findByIdAndTenantId(UUID id, UUID tenantId);
+
+    /**
+     * Count issue reports by status within a tenant.
+     * Used by the dashboard to build per-status aggregates without loading entities.
+     */
+    long countByTenantIdAndStatus(UUID tenantId, IssueReportStatus status);
 }
 

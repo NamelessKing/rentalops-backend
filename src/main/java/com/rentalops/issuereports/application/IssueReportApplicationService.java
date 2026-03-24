@@ -27,7 +27,7 @@ import com.rentalops.tasks.infrastructure.persistence.TaskRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -169,7 +169,7 @@ public class IssueReportApplicationService {
         // Mark the issue report as CONVERTED after the task is persisted.
         report.setStatus(IssueReportStatus.CONVERTED);
         report.setReviewedByUserId(currentUser.userId());
-        report.setReviewedAt(LocalDateTime.now());
+        report.setReviewedAt(Instant.now());
         issueReportRepository.save(report);
 
         return new ConvertIssueReportToTaskResponse(
@@ -215,7 +215,7 @@ public class IssueReportApplicationService {
 
         report.setStatus(IssueReportStatus.DISMISSED);
         report.setReviewedByUserId(currentUser.userId());
-        report.setReviewedAt(LocalDateTime.now());
+        report.setReviewedAt(Instant.now());
         issueReportRepository.save(report);
 
         return new DismissIssueReportResponse(report.getId(), report.getStatus().name());

@@ -11,7 +11,7 @@ import jakarta.persistence.Version;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -91,11 +91,11 @@ public class Task {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     protected Task() {
         // Required by JPA. Not for direct use in application code.
@@ -150,8 +150,8 @@ public class Task {
     public UUID getSourceIssueReportId()     { return sourceIssueReportId; }
     public Integer getEstimatedHours()       { return estimatedHours; }
     public Long getVersion()                 { return version; }
-    public LocalDateTime getCreatedAt()      { return createdAt; }
-    public LocalDateTime getUpdatedAt()      { return updatedAt; }
+    public Instant getCreatedAt()            { return createdAt; }
+    public Instant getUpdatedAt()            { return updatedAt; }
 
     // Setters exposed for Slice 4 (claim sets assigneeId, transitions update status).
     // tenantId, dispatchMode, createdByUserId are deliberately excluded — immutable.

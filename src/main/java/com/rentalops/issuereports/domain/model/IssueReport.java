@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -56,11 +56,11 @@ public class IssueReport {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     // Set when the Admin performs the review action (convert or dismiss).
     @Column(name = "reviewed_at")
-    private LocalDateTime reviewedAt;
+    private Instant reviewedAt;
 
     protected IssueReport() {
         // Required by JPA. Not for direct use in application code.
@@ -90,12 +90,12 @@ public class IssueReport {
     public String getDescription()      { return description; }
     public IssueReportStatus getStatus(){ return status; }
     public UUID getReviewedByUserId()   { return reviewedByUserId; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getReviewedAt(){ return reviewedAt; }
+    public Instant getCreatedAt()       { return createdAt; }
+    public Instant getReviewedAt()      { return reviewedAt; }
 
     // Setters for review transitions — only reviewedByUserId, reviewedAt and status are mutable.
     public void setStatus(IssueReportStatus status)       { this.status = status; }
     public void setReviewedByUserId(UUID reviewedByUserId){ this.reviewedByUserId = reviewedByUserId; }
-    public void setReviewedAt(LocalDateTime reviewedAt)   { this.reviewedAt = reviewedAt; }
+    public void setReviewedAt(Instant reviewedAt)         { this.reviewedAt = reviewedAt; }
 }
 

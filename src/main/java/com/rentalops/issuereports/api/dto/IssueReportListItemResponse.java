@@ -1,6 +1,6 @@
 package com.rentalops.issuereports.api.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -8,6 +8,8 @@ import java.util.UUID;
  *
  * <p>Includes resolved names (propertyName, reportedByUserName) so the
  * frontend can render the list without additional round-trips.
+ *
+ * <p>{@code createdAt} uses {@link Instant} to produce UTC "Z" timestamps in JSON.
  */
 public record IssueReportListItemResponse(
         UUID id,
@@ -17,5 +19,5 @@ public record IssueReportListItemResponse(
         String reportedByUserName,
         String description,
         String status,
-        LocalDateTime createdAt
+        Instant createdAt
 ) {}

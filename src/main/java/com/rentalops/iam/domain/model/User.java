@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -63,11 +63,11 @@ public class User {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     protected User() {
         // Required by JPA. Not for use in application code.
@@ -104,8 +104,8 @@ public class User {
     public UserRole getRole() { return role; }
     public UserStatus getStatus() { return status; }
     public TaskCategory getSpecializationCategory() { return specializationCategory; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 
     // Setters for mutable fields. Status and specialization were already mutable;
     // fullName, email and password are added here to support the operator update use case.

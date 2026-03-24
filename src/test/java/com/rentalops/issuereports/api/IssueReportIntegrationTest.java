@@ -314,7 +314,7 @@ class IssueReportIntegrationTest {
                             {
                               "fullName": "%s",
                               "email": "%s",
-                              "password": "%s",
+                              "initialPassword": "%s",
                               "specializationCategory": "%s"
                             }
                             """.formatted(fullName, email, password, category)))

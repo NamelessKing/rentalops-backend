@@ -24,7 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -93,7 +93,7 @@ class IssueReportWebTest {
         authenticateAsAdmin();
         IssueReportListItemResponse item = new IssueReportListItemResponse(
                 REPORT_ID, PROP_ID, "Loft", OP_ID, "Giulia", "Rubinetto che perde", "OPEN",
-                LocalDateTime.of(2026, 3, 11, 10, 0));
+                Instant.parse("2026-03-11T10:00:00Z"));
         when(queryService.listIssueReports()).thenReturn(List.of(item));
 
         mockMvc.perform(get("/issue-reports"))
@@ -182,7 +182,7 @@ class IssueReportWebTest {
         authenticateAsAdmin();
         IssueReportDetailResponse detail = new IssueReportDetailResponse(
                 REPORT_ID, PROP_ID, "Loft", OP_ID, "Giulia", "Rubinetto", "OPEN",
-                LocalDateTime.of(2026, 3, 11, 10, 0), null, null);
+                Instant.parse("2026-03-11T10:00:00Z"), null, null);
         when(queryService.getIssueReportDetail(REPORT_ID)).thenReturn(detail);
 
         mockMvc.perform(get("/issue-reports/{id}", REPORT_ID))

@@ -20,5 +20,11 @@ public interface PropertyRepository extends JpaRepository<Property, UUID> {
     Optional<Property> findByIdAndTenantId(UUID id, UUID tenantId);
 
     boolean existsByTenantIdAndPropertyCode(UUID tenantId, String propertyCode);
+
+    /**
+     * Count all properties in a tenant.
+     * Used by the dashboard summary query.
+     */
+    long countByTenantId(UUID tenantId);
 }
 

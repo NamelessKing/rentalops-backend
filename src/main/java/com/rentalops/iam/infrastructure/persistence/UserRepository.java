@@ -48,4 +48,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      * without changing their email would incorrectly trigger a 409 conflict.
      */
     boolean existsByEmailAndIdNot(String email, UUID excludedId);
+
+    /**
+     * Count users of a given role within a tenant.
+     * Used by the dashboard to report the number of active operators without
+     * loading full User entities.
+     */
+    long countByTenantIdAndRole(UUID tenantId, UserRole role);
 }
