@@ -168,7 +168,7 @@ public class PropertyController {
     }
 
     @Operation(summary = "Deactivate property",
-               description = "Admin soft-deletes a property by setting its status to INACTIVE.")
+               description = "Admin soft-deactivates a property by setting active=false. The property remains in the database but is treated as inactive.")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",

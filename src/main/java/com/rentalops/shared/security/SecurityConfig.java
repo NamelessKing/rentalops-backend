@@ -17,6 +17,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 /**
  * Central Spring Security configuration for the MVP foundation setup.
  *
@@ -61,8 +63,7 @@ public class SecurityConfig {
                                             RestAuthenticationEntryPoint restAuthenticationEntryPoint) throws Exception {
         return http
                 // Allow frontend preflight and cross-origin auth calls in local development.
-                .cors(cors -> {
-                })
+                .cors(withDefaults())
                 /*
                  * CSRF protection is mainly useful for browser session/cookie based apps.
                  * Here we are building a stateless REST API with bearer tokens, so CSRF

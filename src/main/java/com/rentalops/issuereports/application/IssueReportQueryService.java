@@ -64,9 +64,9 @@ public class IssueReportQueryService {
         Set<UUID> propertyIds = reports.stream().map(IssueReport::getPropertyId).collect(Collectors.toSet());
         Set<UUID> userIds     = reports.stream().map(IssueReport::getReportedByUserId).collect(Collectors.toSet());
 
-        Map<UUID, String> propertyNames = propertyRepository.findAllById(propertyIds).stream()
+        Map<UUID, String> propertyNames = propertyRepository.findAllByTenantIdAndIdIn(tenantId, propertyIds).stream()
                 .collect(Collectors.toMap(Property::getId, Property::getName));
-        Map<UUID, String> userNames = userRepository.findAllById(userIds).stream()
+        Map<UUID, String> userNames = userRepository.findAllByTenantIdAndIdIn(tenantId, userIds).stream()
                 .collect(Collectors.toMap(User::getId, User::getFullName));
 
         return reports.stream()

@@ -22,6 +22,12 @@ public interface PropertyRepository extends JpaRepository<Property, UUID> {
     boolean existsByTenantIdAndPropertyCode(UUID tenantId, String propertyCode);
 
     /**
+     * Tenant-scoped batch lookup for a set of property IDs.
+     * Used to batch-load property names without crossing tenant boundaries.
+     */
+    List<Property> findAllByTenantIdAndIdIn(UUID tenantId, java.util.Collection<UUID> ids);
+
+    /**
      * Count all properties in a tenant.
      * Used by the dashboard summary query.
      */

@@ -50,6 +50,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmailAndIdNot(String email, UUID excludedId);
 
     /**
+     * Tenant-scoped batch lookup for a set of user IDs.
+     * Used to batch-load user names without crossing tenant boundaries.
+     */
+    List<User> findAllByTenantIdAndIdIn(UUID tenantId, java.util.Collection<UUID> ids);
+
+    /**
      * Count users of a given role within a tenant.
      * Used by the dashboard to report the number of active operators without
      * loading full User entities.

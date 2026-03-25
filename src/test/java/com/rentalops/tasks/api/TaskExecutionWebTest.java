@@ -80,7 +80,7 @@ class TaskExecutionWebTest {
     }
 
     @Test
-    void claimTask_notOperator_shouldReturn403() throws Exception {
+    void claimTask_serviceThrowsForbidden_shouldReturn403() throws Exception {
         authenticateAsOperator();
 
         when(taskApplicationService.claimTask(TASK_ID))
