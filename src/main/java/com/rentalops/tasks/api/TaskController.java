@@ -9,6 +9,8 @@ import com.rentalops.tasks.api.dto.TaskPoolItemResponse;
 import com.rentalops.tasks.application.TaskApplicationService;
 import com.rentalops.tasks.application.TaskQueryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -54,7 +56,7 @@ public class TaskController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Task list returned",
-                    content = @Content(schema = @Schema(implementation = TaskListItemResponse.class))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TaskListItemResponse.class)))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -96,7 +98,8 @@ public class TaskController {
             )
     })
     @GetMapping("/{id}")
-    public TaskDetailResponse getTaskDetail(@PathVariable UUID id) {
+    public TaskDetailResponse getTaskDetail(
+            @Parameter(description = "Task UUID") @PathVariable UUID id) {
         return taskQueryService.getTaskDetail(id);
     }
 
@@ -110,6 +113,11 @@ public class TaskController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Validation error or invalid enum value",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))
             ),
             @ApiResponse(
@@ -139,7 +147,7 @@ public class TaskController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Pool task list returned",
-                    content = @Content(schema = @Schema(implementation = TaskPoolItemResponse.class))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TaskPoolItemResponse.class)))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -162,7 +170,7 @@ public class TaskController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Task list returned",
-                    content = @Content(schema = @Schema(implementation = MyTaskItemResponse.class))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = MyTaskItemResponse.class)))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -189,6 +197,11 @@ public class TaskController {
                     content = @Content(schema = @Schema(implementation = TaskClaimResponse.class))
             ),
             @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
                     responseCode = "403",
                     description = "Not an operator",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))
@@ -205,7 +218,8 @@ public class TaskController {
             )
     })
     @PostMapping("/{id}/claim")
-    public TaskClaimResponse claimTask(@PathVariable UUID id) {
+    public TaskClaimResponse claimTask(
+            @Parameter(description = "Task UUID") @PathVariable UUID id) {
         return taskApplicationService.claimTask(id);
     }
 
@@ -213,6 +227,11 @@ public class TaskController {
                description = "Transitions the task from ASSIGNED to IN_PROGRESS. Only the assignee can do this.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Task started"),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
             @ApiResponse(
                     responseCode = "403",
                     description = "Not the task assignee",
@@ -231,7 +250,7 @@ public class TaskController {
     })
     @PatchMapping("/{id}/start")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void startTask(@PathVariable UUID id) {
+    public void startTask(@Parameter(description = "Task UUID") @PathVariable UUID id) {
         taskApplicationService.startTask(id);
     }
 
@@ -239,6 +258,11 @@ public class TaskController {
                description = "Transitions the task from IN_PROGRESS to COMPLETED. Only the assignee can do this.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Task completed"),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
             @ApiResponse(
                     responseCode = "403",
                     description = "Not the task assignee",
@@ -257,7 +281,7 @@ public class TaskController {
     })
     @PatchMapping("/{id}/complete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void completeTask(@PathVariable UUID id) {
+    public void completeTask(@Parameter(description = "Task UUID") @PathVariable UUID id) {
         taskApplicationService.completeTask(id);
     }
 }
