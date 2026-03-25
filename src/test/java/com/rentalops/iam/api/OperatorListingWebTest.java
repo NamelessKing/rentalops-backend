@@ -8,7 +8,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
+import com.rentalops.iam.api.dto.OperatorListItemResponse;
+
 import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,15 +56,25 @@ class OperatorListingWebTest {
 
     @Test
     void testListOperators_ReturnsList() throws Exception {
-        // Mock returns a list with one operator
-        // (simplified for unit test; full data tested in integration tests)
-        when(operatorApplicationService.listOperators())
-                .thenReturn(Collections.emptyList()); // Simplified mock
+        OperatorListItemResponse operator = new OperatorListItemResponse(
+                UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                "Alice Smith",
+                "alice@example.com",
+                "ACTIVE",
+                "CLEANING"
+        );
+        when(operatorApplicationService.listOperators()).thenReturn(List.of(operator));
 
         mockMvc.perform(get("/users/operators")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"))
+                .andExpect(jsonPath("$[0].fullName").value("Alice Smith"))
+                .andExpect(jsonPath("$[0].email").value("alice@example.com"))
+                .andExpect(jsonPath("$[0].status").value("ACTIVE"))
+                .andExpect(jsonPath("$[0].specializationCategory").value("CLEANING"));
     }
 }
 
