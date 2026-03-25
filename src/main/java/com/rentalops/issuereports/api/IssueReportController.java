@@ -10,6 +10,8 @@ import com.rentalops.issuereports.api.dto.IssueReportListItemResponse;
 import com.rentalops.issuereports.application.IssueReportApplicationService;
 import com.rentalops.issuereports.application.IssueReportQueryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -53,7 +55,7 @@ public class IssueReportController {
     @Operation(summary = "List issue reports", description = "Returns all issue reports for the authenticated tenant. Admin only.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List returned",
-                    content = @Content(schema = @Schema(implementation = IssueReportListItemResponse.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = IssueReportListItemResponse.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthenticated",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Not an admin",
@@ -70,6 +72,8 @@ public class IssueReportController {
                     content = @Content(schema = @Schema(implementation = CreateIssueReportResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Not an operator",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "404", description = "Property not found in tenant",
@@ -85,13 +89,16 @@ public class IssueReportController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Detail returned",
                     content = @Content(schema = @Schema(implementation = IssueReportDetailResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Not an admin",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "404", description = "Not found in tenant",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @GetMapping("/{id}")
-    public IssueReportDetailResponse getIssueReportDetail(@PathVariable UUID id) {
+    public IssueReportDetailResponse getIssueReportDetail(
+            @Parameter(description = "Issue report UUID") @PathVariable UUID id) {
         return issueReportQueryService.getIssueReportDetail(id);
     }
 
@@ -102,6 +109,8 @@ public class IssueReportController {
                     content = @Content(schema = @Schema(implementation = ConvertIssueReportToTaskResponse.class))),
             @ApiResponse(responseCode = "400", description = "Validation error",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Not an admin",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "404", description = "Issue report not found in tenant",
@@ -111,7 +120,7 @@ public class IssueReportController {
     })
     @PatchMapping("/{id}/convert-to-task")
     public ConvertIssueReportToTaskResponse convertToTask(
-            @PathVariable UUID id,
+            @Parameter(description = "Issue report UUID") @PathVariable UUID id,
             @Valid @RequestBody ConvertIssueReportToTaskRequest request) {
         return issueReportApplicationService.convertToTask(id, request);
     }
@@ -121,6 +130,8 @@ public class IssueReportController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Dismissed",
                     content = @Content(schema = @Schema(implementation = DismissIssueReportResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "403", description = "Not an admin",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
             @ApiResponse(responseCode = "404", description = "Issue report not found in tenant",
@@ -129,7 +140,8 @@ public class IssueReportController {
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     @PatchMapping("/{id}/dismiss")
-    public DismissIssueReportResponse dismiss(@PathVariable UUID id) {
+    public DismissIssueReportResponse dismiss(
+            @Parameter(description = "Issue report UUID") @PathVariable UUID id) {
         return issueReportApplicationService.dismiss(id);
     }
 }

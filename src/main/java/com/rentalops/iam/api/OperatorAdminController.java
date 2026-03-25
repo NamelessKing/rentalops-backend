@@ -9,6 +9,8 @@ import com.rentalops.iam.api.dto.UpdateOperatorRequest;
 import com.rentalops.iam.api.dto.UpdateOperatorResponse;
 import com.rentalops.iam.application.OperatorApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -58,7 +60,7 @@ public class OperatorAdminController {
             @ApiResponse(
                     responseCode = "200",
                     description = "List of operators",
-                    content = @Content(schema = @Schema(implementation = OperatorListItemResponse.class))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OperatorListItemResponse.class)))
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -123,12 +125,25 @@ public class OperatorAdminController {
                     description = "Operator disabled",
                     content = @Content(schema = @Schema(implementation = DisableOperatorResponse.class))
             ),
-            @ApiResponse(responseCode = "401", description = "Unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "Not an admin"),
-            @ApiResponse(responseCode = "404", description = "Operator not found in this tenant")
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Not an admin",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Operator not found in this tenant",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
     })
     @PatchMapping("/{id}/disable")
-    public DisableOperatorResponse disableOperator(@PathVariable UUID id) {
+    public DisableOperatorResponse disableOperator(
+            @Parameter(description = "Operator UUID") @PathVariable UUID id) {
         return operatorApplicationService.disableOperator(id);
     }
 
@@ -147,9 +162,21 @@ public class OperatorAdminController {
                     description = "Validation error",
                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))
             ),
-            @ApiResponse(responseCode = "401", description = "Unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "Not an admin"),
-            @ApiResponse(responseCode = "404", description = "Operator not found in this tenant"),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Not an admin",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Operator not found in this tenant",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Email already in use by another user",
@@ -158,7 +185,7 @@ public class OperatorAdminController {
     })
     @PutMapping("/{id}")
     public UpdateOperatorResponse updateOperator(
-            @PathVariable UUID id,
+            @Parameter(description = "Operator UUID") @PathVariable UUID id,
             @Valid @RequestBody UpdateOperatorRequest request) {
         return operatorApplicationService.updateOperator(id, request);
     }
@@ -173,12 +200,25 @@ public class OperatorAdminController {
                     description = "Operator enabled",
                     content = @Content(schema = @Schema(implementation = EnableOperatorResponse.class))
             ),
-            @ApiResponse(responseCode = "401", description = "Unauthenticated"),
-            @ApiResponse(responseCode = "403", description = "Not an admin"),
-            @ApiResponse(responseCode = "404", description = "Operator not found in this tenant")
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Not an admin",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Operator not found in this tenant",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+            )
     })
     @PatchMapping("/{id}/enable")
-    public EnableOperatorResponse enableOperator(@PathVariable UUID id) {
+    public EnableOperatorResponse enableOperator(
+            @Parameter(description = "Operator UUID") @PathVariable UUID id) {
         return operatorApplicationService.enableOperator(id);
     }
 }

@@ -7,6 +7,8 @@ import com.rentalops.properties.api.dto.PropertyListItemResponse;
 import com.rentalops.properties.api.dto.UpdatePropertyRequest;
 import com.rentalops.properties.application.PropertyApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -45,9 +47,14 @@ public class PropertyController {
         this.propertyApplicationService = propertyApplicationService;
     }
 
-    @Operation(summary = "List tenant properties")
+    @Operation(summary = "List tenant properties",
+               description = "Returns all properties in the authenticated user's tenant.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Property list"),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Property list",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = PropertyListItemResponse.class)))
+            ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Unauthenticated",
@@ -59,7 +66,8 @@ public class PropertyController {
         return propertyApplicationService.listProperties();
     }
 
-    @Operation(summary = "Create property")
+    @Operation(summary = "Create property",
+               description = "Admin creates a new property in the authenticated tenant. Property code must be unique within the tenant.")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
@@ -93,7 +101,8 @@ public class PropertyController {
         return propertyApplicationService.createProperty(request);
     }
 
-    @Operation(summary = "Get property detail")
+    @Operation(summary = "Get property detail",
+               description = "Returns full detail for a single property. Scoped to the authenticated tenant.")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -112,11 +121,13 @@ public class PropertyController {
             )
     })
     @GetMapping("/{id}")
-    public PropertyDetailResponse getPropertyDetail(@PathVariable UUID id) {
+    public PropertyDetailResponse getPropertyDetail(
+            @Parameter(description = "Property UUID") @PathVariable UUID id) {
         return propertyApplicationService.getPropertyDetail(id);
     }
 
-    @Operation(summary = "Update property")
+    @Operation(summary = "Update property",
+               description = "Admin performs a full update of an existing property. Property code must remain unique within the tenant.")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -150,12 +161,14 @@ public class PropertyController {
             )
     })
     @PutMapping("/{id}")
-    public PropertyDetailResponse updateProperty(@PathVariable UUID id,
-                                                 @Valid @RequestBody UpdatePropertyRequest request) {
+    public PropertyDetailResponse updateProperty(
+            @Parameter(description = "Property UUID") @PathVariable UUID id,
+            @Valid @RequestBody UpdatePropertyRequest request) {
         return propertyApplicationService.updateProperty(id, request);
     }
 
-    @Operation(summary = "Deactivate property")
+    @Operation(summary = "Deactivate property",
+               description = "Admin soft-deletes a property by setting its status to INACTIVE.")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -179,7 +192,8 @@ public class PropertyController {
             )
     })
     @PatchMapping("/{id}/deactivate")
-    public DeactivatePropertyResponse deactivateProperty(@PathVariable UUID id) {
+    public DeactivatePropertyResponse deactivateProperty(
+            @Parameter(description = "Property UUID") @PathVariable UUID id) {
         return propertyApplicationService.deactivateProperty(id);
     }
 }
