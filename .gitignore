@@ -38,3 +38,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### GitHub (strict policy) ###
+.github/*
+!.github/workflows/
+!.github/workflows/**
