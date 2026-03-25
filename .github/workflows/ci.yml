@@ -32,6 +32,9 @@ jobs:
           distribution: temurin
           cache: maven
 
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
+
       - name: Compile (skip tests)
         run: ./mvnw -DskipTests compile
 
@@ -59,6 +62,9 @@ jobs:
           java-version: "21"
           distribution: temurin
           cache: maven
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
 
       - name: Run tests
         run: ./mvnw verify
