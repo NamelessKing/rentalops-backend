@@ -47,8 +47,12 @@ class ApiExceptionHandlerTest {
 
         // MethodParameter requires a real Method reference; we use Object#toString as a
         // neutral placeholder since the handler only reads the BindingResult, not the parameter.
-        MethodParameter stubParameter = new MethodParameter(
-                Object.class.getDeclaredMethods()[0], -1);
+        MethodParameter stubParameter;
+        try {
+            stubParameter = new MethodParameter(Object.class.getMethod("toString"), -1);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException("Object#toString must exist", e);
+        }
         MethodArgumentNotValidException ex =
                 new MethodArgumentNotValidException(stubParameter, bindingResult);
 
