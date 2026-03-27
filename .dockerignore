@@ -1,0 +1,8 @@
+.git
+.github
+.idea
+target
+env.properties
+*.log
+*.iml
+docs
